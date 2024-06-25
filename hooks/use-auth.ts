@@ -8,3 +8,10 @@ export const useSignIn = () => {
     mutationFn: async (user: User) => await userApi.signInUser(user),
   });
 };
+
+export const useSignUp = () => {
+  return useMutation<User, Error, User>({
+    mutationKey: ["sign-up"],
+    mutationFn: async (user: User) => await userApi.signUpUser(user),
+  });
+};

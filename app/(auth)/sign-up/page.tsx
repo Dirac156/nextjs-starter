@@ -11,48 +11,43 @@ import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { OAuthStrategy } from "@clerk/types";
 import { useUserContext } from "@/providers";
-import {
-  useAuth,
-  useSignIn as useSignInWithClerk,
-  useSignUp as useSignUpwithClerk,
-} from "@clerk/nextjs";
-import { useSignIn } from "@/hooks";
+import { useAuth, useSignUp as useSignUpwithClerk } from "@clerk/nextjs";
+import { useSignIn, useSignUp } from "@/hooks";
 
-export default function SignIn() {
+export default function SignUp() {
   const router = useRouter();
   const { signOut: signOutWithClerk } = useAuth();
-  const { signIn: signInWithclerk } = useSignInWithClerk();
+  const { signUp: signUpWithClerk } = useSignUpwithClerk();
   const { toast } = useToast();
   const { signIn } = useUserContext();
-  // TODO: @Dirac: useSignUp
   const {
-    mutate: startSignIn,
-    data: signInUser,
-    error: signInError,
-    isSuccess: isSignIn,
-    isError: isSignInError,
-    isPending: isSigningIn,
-  } = useSignIn();
+    mutate: startSignUp,
+    data: signedUpUser,
+    error: signUpError,
+    isSuccess: isSignUp,
+    isError: isSignUpError,
+    isPending: isSigningUp,
+  } = useSignUp();
 
   // Define the schema using Zod
-  const signInSchema = z.object({
+  const signUpSchema = z.object({
     email: z.string().email({ message: "Invalid email address" }),
     password: z
       .string()
       .min(6, { message: "Password must be at least 6 characters" }),
   });
 
-  type SignInFormValues = z.infer<typeof signInSchema>;
+  type SignInFormValues = z.infer<typeof signUpSchema>;
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<SignInFormValues>({
-    resolver: zodResolver(signInSchema),
+    resolver: zodResolver(signUpSchema),
   });
 
   const onSubmit = (data: SignInFormValues) => {
-    startSignIn(data as User);
+    startSignUp(data as User);
   };
 
   useEffect(() => {
@@ -61,30 +56,31 @@ export default function SignIn() {
   }, [router]);
 
   useEffect(() => {
-    if (isSignInError) {
+    if (isSignUpError) {
       toast({
         variant: "destructive",
-        description: `Sign In Failed! ${signInError?.message}`,
+        description: `Sign In Failed! ${signUpError?.message}`,
       });
     }
-  }, [isSignInError, signInError, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSignUpError]);
 
   useEffect(() => {
-    if (isSignIn) {
-      signIn(signInUser);
+    if (isSignUp) {
+      signIn(signedUpUser);
       router.push("/store");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSignIn]);
+  }, [isSignUp]);
 
-  if (!signInWithclerk || !signOutWithClerk) return null;
+  if (!signUpWithClerk || !signOutWithClerk) return null;
 
-  const signInWith = async (strategy: OAuthStrategy) => {
+  const signUpWith = async (strategy: OAuthStrategy) => {
     await signOutWithClerk();
-    return signInWithclerk?.authenticateWithRedirect({
+    return signUpWithClerk?.authenticateWithRedirect({
       strategy,
       redirectUrl: "/sso-fallback",
-      redirectUrlComplete: "/sso-fallback-signin",
+      redirectUrlComplete: "/sso-fallback-signup",
     });
   };
 
@@ -94,22 +90,22 @@ export default function SignIn() {
         <div className="flex flex-items justify-center gap-5">
           <Button
             type="button"
-            onClick={() => signInWith("oauth_google")}
+            onClick={() => signUpWith("oauth_google")}
             variant={"outline"}
           >
-            Sign in with Google
+            Sign up with Google
           </Button>
           <Button
             type="button"
-            onClick={() => signInWith("oauth_tiktok")}
+            onClick={() => signUpWith("oauth_tiktok")}
             variant={"outline"}
           >
-            Sign in with Tiktok
+            Sign up with Tiktok
           </Button>
         </div>
         <form onSubmit={handleSubmit(onSubmit)}>
           <h2 className="text-2xl font-bold text-center dark:text-gray-500">
-            Sign In
+            Sign Up
           </h2>
           <div className="mb-4">
             <label
@@ -159,10 +155,10 @@ export default function SignIn() {
           <div className="flex items-center justify-center">
             <Button
               className="flex items-center justify-center gap-2"
-              disabled={isSigningIn}
+              disabled={isSigningUp}
             >
-              {isSigningIn && <Spinner />}
-              Sign In
+              {isSigningUp && <Spinner />}
+              Sign Up
             </Button>
           </div>
         </form>

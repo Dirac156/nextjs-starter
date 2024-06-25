@@ -2,7 +2,13 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
-import Navigation from "@/components/navigation/navigation";
+import {
+  ClerkProvider,
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from "@clerk/nextjs";
 import { ReactQueryClientProvider } from "@/providers/react-query-provider";
 import { UserProvider } from "@/providers/user-provider";
 import { Toaster } from "@/components/ui/toaster";
@@ -20,24 +26,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <ReactQueryClientProvider>
-            <UserProvider>
-              <div className="dark:bg-gray-900 bg-gray-100 dark:text-gray-100 w-full min-h-screen p-10">
-                {children}
-              </div>
-            </UserProvider>
-          </ReactQueryClientProvider>
-        </ThemeProvider>
-        <Toaster />
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={inter.className}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+            <ReactQueryClientProvider>
+              <UserProvider>
+                <div className="dark:bg-gray-900 bg-gray-100 dark:text-gray-100 w-full min-h-screen p-10">
+                  {children}
+                </div>
+              </UserProvider>
+            </ReactQueryClientProvider>
+          </ThemeProvider>
+          <Toaster />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
