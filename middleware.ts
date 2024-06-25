@@ -14,6 +14,9 @@ const publicRoutes = [
   "/sign-up",
   "/sign-out",
   "/sign-in-redirect",
+  "/sso-fallback",
+  "/sso-fallback-signin",
+  "/sso-fallback-signup",
 ];
 
 export function middleware(req: NextRequest, ev: NextFetchEvent) {

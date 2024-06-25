@@ -11,20 +11,15 @@ import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { OAuthStrategy } from "@clerk/types";
 import { useUserContext } from "@/providers";
-import {
-  useAuth,
-  useSignIn as useSignInWithClerk,
-  useSignUp as useSignUpwithClerk,
-} from "@clerk/nextjs";
+import { useAuth, useSignUp as useSignUpwithClerk } from "@clerk/nextjs";
 import { useSignIn } from "@/hooks";
 
-export default function SignIn() {
+export default function SignUp() {
   const router = useRouter();
   const { signOut: signOutWithClerk } = useAuth();
-  const { signIn: signInWithclerk } = useSignInWithClerk();
+  const { signUp: signUpWithClerk } = useSignUpwithClerk();
   const { toast } = useToast();
   const { signIn } = useUserContext();
-  // TODO: @Dirac: useSignUp
   const {
     mutate: startSignIn,
     data: signInUser,
@@ -77,14 +72,14 @@ export default function SignIn() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignIn]);
 
-  if (!signInWithclerk || !signOutWithClerk) return null;
+  if (!signUpWithClerk || !signOutWithClerk) return null;
 
-  const signInWith = async (strategy: OAuthStrategy) => {
+  const signUpWith = async (strategy: OAuthStrategy) => {
     await signOutWithClerk();
-    return signInWithclerk?.authenticateWithRedirect({
+    return signUpWithClerk?.authenticateWithRedirect({
       strategy,
       redirectUrl: "/sso-fallback",
-      redirectUrlComplete: "/sso-fallback-signin",
+      redirectUrlComplete: "/sso-fallback-signup",
     });
   };
 
@@ -94,18 +89,18 @@ export default function SignIn() {
         <div className="flex flex-items justify-center gap-5">
           <Button
             type="button"
-            onClick={() => signInWith("oauth_google")}
+            onClick={() => signUpWith("oauth_google")}
             variant={"outline"}
           >
-            Sign in with Google
+            Sign up with Google
           </Button>
           <Button className="" variant={"outline"}>
-            Sign in with Tiktok
+            Sign up with Tiktok
           </Button>
         </div>
         <form onSubmit={handleSubmit(onSubmit)}>
           <h2 className="text-2xl font-bold text-center dark:text-gray-500">
-            Sign In
+            Sign Up
           </h2>
           <div className="mb-4">
             <label
@@ -158,7 +153,7 @@ export default function SignIn() {
               disabled={isSigningIn}
             >
               {isSigningIn && <Spinner />}
-              Sign In
+              Sign Up
             </Button>
           </div>
         </form>
