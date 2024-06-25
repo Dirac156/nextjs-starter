@@ -25,7 +25,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <div className="dark:bg-zinc-950 bg- w-full min-h-screen p-10">
+          <div className="dark:bg-gray-900 bg-gray-100 dark:text-gray-100 w-full min-h-screen p-10">
             <Navigation />
             {children}
           </div>
