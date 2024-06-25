@@ -12,7 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { OAuthStrategy } from "@clerk/types";
 import { useUserContext } from "@/providers";
 import { useAuth, useSignUp as useSignUpwithClerk } from "@clerk/nextjs";
-import { useSignIn } from "@/hooks";
+import { useSignIn, useSignUp } from "@/hooks";
 
 export default function SignUp() {
   const router = useRouter();
@@ -21,33 +21,33 @@ export default function SignUp() {
   const { toast } = useToast();
   const { signIn } = useUserContext();
   const {
-    mutate: startSignIn,
-    data: signInUser,
-    error: signInError,
-    isSuccess: isSignIn,
-    isError: isSignInError,
-    isPending: isSigningIn,
-  } = useSignIn();
+    mutate: startSignUp,
+    data: signedUpUser,
+    error: signUpError,
+    isSuccess: isSignUp,
+    isError: isSignUpError,
+    isPending: isSigningUp,
+  } = useSignUp();
 
   // Define the schema using Zod
-  const signInSchema = z.object({
+  const signUpSchema = z.object({
     email: z.string().email({ message: "Invalid email address" }),
     password: z
       .string()
       .min(6, { message: "Password must be at least 6 characters" }),
   });
 
-  type SignInFormValues = z.infer<typeof signInSchema>;
+  type SignInFormValues = z.infer<typeof signUpSchema>;
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<SignInFormValues>({
-    resolver: zodResolver(signInSchema),
+    resolver: zodResolver(signUpSchema),
   });
 
   const onSubmit = (data: SignInFormValues) => {
-    startSignIn(data as User);
+    startSignUp(data as User);
   };
 
   useEffect(() => {
@@ -56,21 +56,22 @@ export default function SignUp() {
   }, [router]);
 
   useEffect(() => {
-    if (isSignInError) {
+    if (isSignUpError) {
       toast({
         variant: "destructive",
-        description: `Sign In Failed! ${signInError?.message}`,
+        description: `Sign In Failed! ${signUpError?.message}`,
       });
     }
-  }, [isSignInError, signInError, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSignUpError]);
 
   useEffect(() => {
-    if (isSignIn) {
-      signIn(signInUser);
+    if (isSignUp) {
+      signIn(signedUpUser);
       router.push("/store");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSignIn]);
+  }, [isSignUp]);
 
   if (!signUpWithClerk || !signOutWithClerk) return null;
 
@@ -94,7 +95,11 @@ export default function SignUp() {
           >
             Sign up with Google
           </Button>
-          <Button className="" variant={"outline"}>
+          <Button
+            type="button"
+            onClick={() => signUpWith("oauth_tiktok")}
+            variant={"outline"}
+          >
             Sign up with Tiktok
           </Button>
         </div>
@@ -150,9 +155,9 @@ export default function SignUp() {
           <div className="flex items-center justify-center">
             <Button
               className="flex items-center justify-center gap-2"
-              disabled={isSigningIn}
+              disabled={isSigningUp}
             >
-              {isSigningIn && <Spinner />}
+              {isSigningUp && <Spinner />}
               Sign Up
             </Button>
           </div>

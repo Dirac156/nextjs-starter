@@ -99,7 +99,11 @@ export default function SignIn() {
           >
             Sign in with Google
           </Button>
-          <Button className="" variant={"outline"}>
+          <Button
+            type="button"
+            onClick={() => signInWith("oauth_tiktok")}
+            variant={"outline"}
+          >
             Sign in with Tiktok
           </Button>
         </div>
