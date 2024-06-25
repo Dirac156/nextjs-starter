@@ -5,19 +5,27 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useSignIn } from "@/hooks";
 import { User } from "@/global";
 import Spinner from "@/components/spinner/spinner";
 import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import ConsoleLog from "@/utils/console-log";
-import { useUserStore } from "@/stores";
+import { OAuthStrategy } from "@clerk/types";
 import { useUserContext } from "@/providers";
+import {
+  useSignIn as useSignInWithClerk,
+  useSignUp as useSignUpwithClerk,
+  useUser,
+} from "@clerk/nextjs";
+import { useSignIn } from "@/hooks";
+import ConsoleLog from "@/utils/console-log";
 
 export default function SignIn() {
   const router = useRouter();
+  const { signIn: signInWithclerk } = useSignInWithClerk();
+  const { signUp: signUpWithClerk } = useSignUpwithClerk();
   const { toast } = useToast();
   const { signIn } = useUserContext();
+  const { user } = useUser();
   const {
     mutate: startSignIn,
     data: signInUser,
@@ -70,15 +78,37 @@ export default function SignIn() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignIn]);
 
-  ConsoleLog(isSignIn, signInUser);
+  if (!signInWithclerk) return null;
+
+  const signInWith = (strategy: OAuthStrategy) => {
+    return signUpWithClerk?.authenticateWithRedirect({
+      strategy,
+      redirectUrl: "/sso-callback-signin",
+      redirectUrlComplete: "/sign-in",
+    });
+  };
+
+  ConsoleLog("user in completed redirect", user);
 
   return (
     <div className="min-h-screen flex items-center justify-center ">
-      <div className="max-w-md w-full bg-white dark:bg-zinc-800 p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-6 text-center dark:text-gray-500">
-          Sign In
-        </h2>
+      <div className="max-w-md w-full bg-white dark:bg-zinc-800 p-8 rounded-lg shadow-lg flex flex-col gap-10">
+        <div className="flex flex-items justify-center gap-5">
+          <Button
+            type="button"
+            onClick={() => signInWith("oauth_google")}
+            variant={"outline"}
+          >
+            Sign in with Google
+          </Button>
+          <Button className="" variant={"outline"}>
+            Sign in with Tiktok
+          </Button>
+        </div>
         <form onSubmit={handleSubmit(onSubmit)}>
+          <h2 className="text-2xl font-bold text-center dark:text-gray-500">
+            Sign In
+          </h2>
           <div className="mb-4">
             <label
               htmlFor="email"
@@ -123,6 +153,7 @@ export default function SignIn() {
               </p>
             )}
           </div>
+
           <div className="flex items-center justify-center">
             <Button
               className="flex items-center justify-center gap-2"
