@@ -1,5 +1,5 @@
 "use client";
 
 export default function Logo() {
-  return <div></div>;
+  return <div>LOGO</div>;
 }
