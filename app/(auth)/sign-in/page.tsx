@@ -4,18 +4,38 @@ import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-
-// Define the schema using Zod
-const signInSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters" }),
-});
-
-type SignInFormValues = z.infer<typeof signInSchema>;
+import { useRouter } from "next/navigation";
+import { useSignIn } from "@/hooks";
+import { User } from "@/global";
+import Spinner from "@/components/spinner/spinner";
+import { useEffect } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import ConsoleLog from "@/utils/console-log";
+import { useUserStore } from "@/stores";
+import { useUserContext } from "@/providers";
 
 export default function SignIn() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const { signIn } = useUserContext();
+  const {
+    mutate: startSignIn,
+    data: signInUser,
+    error: signInError,
+    isSuccess: isSignIn,
+    isError: isSignInError,
+    isPending: isSigningIn,
+  } = useSignIn();
+
+  // Define the schema using Zod
+  const signInSchema = z.object({
+    email: z.string().email({ message: "Invalid email address" }),
+    password: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters" }),
+  });
+
+  type SignInFormValues = z.infer<typeof signInSchema>;
   const {
     register,
     handleSubmit,
@@ -25,9 +45,32 @@ export default function SignIn() {
   });
 
   const onSubmit = (data: SignInFormValues) => {
-    console.log(data);
-    // Handle sign-in logic here
+    startSignIn(data as User);
   };
+
+  useEffect(() => {
+    router.prefetch("/store");
+    router.prefetch("/");
+  }, [router]);
+
+  useEffect(() => {
+    if (isSignInError) {
+      toast({
+        variant: "destructive",
+        description: `Sign In Failed! ${signInError?.message}`,
+      });
+    }
+  }, [isSignInError, signInError, toast]);
+
+  useEffect(() => {
+    if (isSignIn) {
+      signIn(signInUser);
+      router.push("/store");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSignIn]);
+
+  ConsoleLog(isSignIn, signInUser);
 
   return (
     <div className="min-h-screen flex items-center justify-center ">
@@ -81,7 +124,13 @@ export default function SignIn() {
             )}
           </div>
           <div className="flex items-center justify-center">
-            <Button>Sign In</Button>
+            <Button
+              className="flex items-center justify-center gap-2"
+              disabled={isSigningIn}
+            >
+              {isSigningIn && <Spinner />}
+              Sign In
+            </Button>
           </div>
         </form>
       </div>

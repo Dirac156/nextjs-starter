@@ -3,6 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import Navigation from "@/components/navigation/navigation";
+import { ReactQueryClientProvider } from "@/providers/react-query-provider";
+import { UserProvider } from "@/providers/user-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,11 +28,15 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <div className="dark:bg-gray-900 bg-gray-100 dark:text-gray-100 w-full min-h-screen p-10">
-            <Navigation />
-            {children}
-          </div>
+          <ReactQueryClientProvider>
+            <UserProvider>
+              <div className="dark:bg-gray-900 bg-gray-100 dark:text-gray-100 w-full min-h-screen p-10">
+                {children}
+              </div>
+            </UserProvider>
+          </ReactQueryClientProvider>
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   );
